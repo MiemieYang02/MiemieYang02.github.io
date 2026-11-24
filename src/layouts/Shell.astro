@@ -32,7 +32,7 @@ const links = [['/', '首页'], ['/projects/', '项目'], ['/about/', '关于']]
   </div></header>
   <main id="main" class="wrap"><slot /></main>
   </div>
-  <footer class="wrap footer"><a href="/" class="brand">{siteName}</a><span>© {new Date().getUTCFullYear()} MiemieYang02</span><a href="https://github.com/MiemieYang02"><Icon name="github" size={16}/> GitHub</a></footer>
+  <footer class="wrap footer"><a href="/" class="brand">{siteName}</a><a href="https://github.com/MiemieYang02"><Icon name="github" size={16}/> GitHub</a></footer>
   <script>
     const toggle = document.querySelector<HTMLButtonElement>('#theme')!;
     const root = document.documentElement;
