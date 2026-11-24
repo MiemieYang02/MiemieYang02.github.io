@@ -1,0 +1,26 @@
+---
+import Shell, { siteName } from '../layouts/Shell.astro';
+import EntryRow from '../components/EntryRow.astro';
+import { published } from '../lib/entries';
+
+const projects = await published();
+---
+<Shell>
+  <header class="page-head home-head">
+    <span class="eyebrow">MiemieYang02 / Projects</span>
+    <h1 lang="en">{siteName}</h1>
+    <p>记录所学，探索未知，分享所得。</p>
+  </header>
+  <div class="home-columns">
+    <section aria-labelledby="recent">
+      <header class="section-heading"><h2 id="recent">近期项目</h2><a class="all-link" href="/projects/">全部项目</a></header>
+      <ul class="entries">{projects.slice(0, 5).map(entry => <EntryRow entry={entry} />)}</ul>
+      {projects.length === 0 && <p>项目整理中。</p>}
+    </section>
+    <aside class="side-block">
+      <h2>关于作者</h2>
+      <p><a href="/about/">MiemieYang02</a></p>
+      <a class="all-link" href="https://github.com/MiemieYang02">GitHub</a>
+    </aside>
+  </div>
+</Shell>

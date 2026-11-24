@@ -1,0 +1,21 @@
+---
+import Shell from '../layouts/Shell.astro';
+import Icon from '../components/Icon.astro';
+const topics = ['C/C++', 'Linux', '嵌入式系统', 'IoT 智能网关', 'Edge AI', '深度学习', '小模型部署'];
+---
+<Shell title="关于我">
+  <header class="profile-head">
+    <h1>MiemieYang02</h1>
+    <p>杭州电子科技大学研究生</p>
+  </header>
+  <article class="prose about">
+    <h2 id="topics">技术与研究</h2>
+    <ul class="topic-list" aria-labelledby="topics">
+      {topics.map(topic => <li>{topic}</li>)}
+    </ul>
+    <h2>研究与学习</h2>
+    <p>我关注嵌入式软件、边缘智能与物联网网关。在这里分享工程项目，记录为什么这样设计、如何实现，以及最终怎样验证。</p>
+    <h2>找到我</h2>
+    <a class="text-action" href="https://github.com/MiemieYang02"><Icon name="github" />GitHub · MiemieYang02</a>
+  </article>
+</Shell>

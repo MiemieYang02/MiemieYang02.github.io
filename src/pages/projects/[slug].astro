@@ -1,0 +1,71 @@
+---
+import { render } from 'astro:content';
+import Shell from '../../layouts/Shell.astro';
+import { published, href, isoDate } from '../../lib/entries';
+import { localReferences } from '../../lib/markdown';
+import 'katex/dist/katex.min.css';
+export async function getStaticPaths() {
+  const entries = await published();
+  const backlinks = new Map<string, typeof entries>();
+  for (const source of entries) {
+    const base = new URL(href(source), import.meta.env.SITE);
+    for (const target of localReferences(source.body ?? '', base)) {
+      const incoming = backlinks.get(target) ?? [];
+      incoming.push(source);
+      backlinks.set(target, incoming);
+    }
+  }
+  return entries.map((entry, index) => ({
+    params: { slug: entry.id },
+    props: { entry, prev: entries[index - 1], next: entries[index + 1], backlinks: backlinks.get(href(entry)) ?? [] },
+  }));
+}
+const { entry, prev, next, backlinks } = Astro.props;
+const { Content, headings } = await render(entry);
+const { title, description, category, tags } = entry.data;
+const toc = headings.filter(h => h.depth === 2 || h.depth === 3);
+---
+<Shell title={title} description={description}>
+  <header class="page-head detail-head"><a class="eyebrow" href="/projects/">Projects / 项目目录</a><h1>{title}</h1><p>{description}</p><div class="entry-meta"><span>{category}</span><i></i><time datetime={isoDate(entry)}>{isoDate(entry)}</time><i></i>MiemieYang02</div></header>
+  <div class="reading">
+    <article class="prose"><Content/><div class="tags">{tags.map(t => <a href={'/projects/?q='+encodeURIComponent(t)}>#{t}</a>)}</div>
+      {backlinks.length > 0 && <section><h2>引用此项目</h2><ul>{backlinks.map(source => <li><a href={href(source)}>{source.data.title}</a></li>)}</ul></section>}
+      <nav class="adjacent" aria-label="项目导航">{prev && <a href={href(prev)}><small>上一个项目</small>{prev.data.title}</a>}{next && <a href={href(next)}><small>下一个项目</small>{next.data.title}</a>}</nav>
+    </article>
+    {toc.length > 0 && <aside class="toc"><h2>本文目录</h2><ol>{toc.map(h => <li class:list={[h.depth === 3 && 'sub']}><a href={'#'+h.slug}>{h.text}</a></li>)}</ol></aside>}
+  </div>
+  <script>
+    for (const pre of document.querySelectorAll<HTMLPreElement>('pre.astro-code')) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-wrap';
+      pre.before(wrapper); wrapper.append(pre);
+      const button = document.createElement('button');
+      button.type = 'button'; button.textContent = '复制'; button.setAttribute('aria-label','复制代码');
+      wrapper.prepend(button);
+      button.onclick = async () => {
+        try { await navigator.clipboard.writeText(pre.textContent || ''); button.textContent = '已复制'; }
+        catch { button.textContent = '请选中复制'; }
+        setTimeout(() => button.textContent = '复制', 1700);
+      };
+    }
+    const diagrams = document.querySelectorAll<HTMLElement>('.diagram-source');
+    if (diagrams.length) {
+      import('mermaid/dist/mermaid.min.js?url').then(({ default: src }) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = async () => {
+          const mermaid = (window as unknown as { mermaid: typeof import('mermaid').default }).mermaid;
+          mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'neutral', fontFamily: getComputedStyle(document.body).fontFamily, suppressErrorRendering: true });
+          for (const [i, pre] of [...diagrams].entries()) {
+            try {
+              const { svg } = await mermaid.render('diagram-' + i, pre.textContent || '');
+              const figure = document.createElement('figure');
+              figure.className = 'diagram'; figure.innerHTML = svg; pre.replaceWith(figure);
+            } catch { pre.title = '图表未能渲染，已展示 Mermaid 源码'; }
+          }
+        };
+        document.head.append(script);
+      });
+    }
+  </script>
+</Shell>

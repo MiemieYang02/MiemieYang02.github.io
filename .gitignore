@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.astro/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/
+.idea/
+
+# Obsidian configuration
+.obsidian/
+.trash/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Unpublished imports and local verification files
+.local-drafts/
+temp/

@@ -1,0 +1,61 @@
+---
+import Icon from '../components/Icon.astro';
+import '../styles/site.css';
+const { title, description = 'MiemieYang02 的工程项目分享站，记录项目背景、技术选型、实现与验证。' } = Astro.props;
+export const siteName = "Miemie's Notes";
+const path = Astro.url.pathname;
+const links = [['/', '首页'], ['/projects/', '项目'], ['/about/', '关于']];
+---
+<!doctype html>
+<html lang="zh-CN"><head>
+  <meta charset="utf-8" />
+  <meta name="color-scheme" content="light dark" />
+  <script is:inline>
+    try {
+      const value = localStorage.getItem('scheme');
+      if (value === 'light' || value === 'dark') document.documentElement.dataset.theme = value;
+    } catch {}
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title ? title + ' · ' + siteName : siteName}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={new URL(path, Astro.site)} />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+</head><body>
+  <div class:list={['page-scroll', { 'home-scroll': path === '/' }]}>
+  <a href="#main" class="skip">跳到正文</a>
+  <header class="top"><div class="wrap bar">
+    <a href="/" class="brand" aria-label={siteName + '首页'}><span class="mark"><Icon name="terminal" size={19} /></span>{siteName}</a>
+    <span class="header-topics" lang="en">Embedded Systems · Linux · Edge AI</span>
+    <nav aria-label="主导航">{links.map(([url, label]) => <a href={url} aria-current={(url === '/' ? path === '/' : path.startsWith(url)) ? 'page' : undefined}>{label}</a>)}</nav>
+    <button hidden type="button" id="theme" class="icon-button" aria-label="切换浅色或深色模式" title="切换浅色或深色模式"><Icon name="sun" /></button>
+  </div></header>
+  <main id="main" class="wrap"><slot /></main>
+  </div>
+  <footer class="wrap footer"><a href="/" class="brand">{siteName}</a><span>© {new Date().getUTCFullYear()} MiemieYang02</span><a href="https://github.com/MiemieYang02"><Icon name="github" size={16}/> GitHub</a></footer>
+  <script>
+    const toggle = document.querySelector<HTMLButtonElement>('#theme')!;
+    const root = document.documentElement;
+    const system = matchMedia('(prefers-color-scheme: dark)');
+    const systemTheme = () => system.matches ? 'dark' : 'light';
+    function sync() {
+      toggle.setAttribute('aria-pressed', String((root.dataset.theme || systemTheme()) === 'dark'));
+    }
+    toggle.hidden = false;
+    toggle.onclick = () => {
+      const next = (root.dataset.theme || systemTheme()) === 'dark' ? 'light' : 'dark';
+      if (next === systemTheme()) delete root.dataset.theme;
+      else root.dataset.theme = next;
+      try { if (root.dataset.theme) localStorage.setItem('scheme', next); else localStorage.removeItem('scheme'); } catch {}
+      sync();
+    };
+    window.addEventListener('storage', event => {
+      if (event.key !== 'scheme' && event.key !== null) return;
+      if (event.newValue === 'dark' || event.newValue === 'light') root.dataset.theme = event.newValue;
+      else delete root.dataset.theme;
+      sync();
+    });
+    system.addEventListener('change', sync);
+    sync();
+  </script>
+</body></html>

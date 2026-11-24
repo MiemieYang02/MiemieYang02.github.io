@@ -1,0 +1,41 @@
+---
+import Shell from '../../layouts/Shell.astro';
+import EntryRow from '../../components/EntryRow.astro';
+import Icon from '../../components/Icon.astro';
+import { published } from '../../lib/entries';
+import { PAGE_SIZE, archiveUrl } from '../../lib/pagination';
+
+export async function getStaticPaths() {
+  const entries = await published();
+  const pages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
+  return Array.from({ length: pages }, (_, i) => ({
+    params: { archive: i === 0 ? undefined : 'page/' + (i + 1) },
+    props: { entries: entries.slice(i * PAGE_SIZE, (i + 1) * PAGE_SIZE), page: i + 1, pages, total: entries.length },
+  }));
+}
+const { entries, page, pages, total } = Astro.props;
+---
+<Shell title={page === 1 ? '项目目录' : '项目目录 · 第 ' + page + ' 页'}>
+  <header class="page-head archive-head"><span class="eyebrow">Projects</span><h1>项目目录</h1></header>
+  <section class="archive">
+    <form class="filters" role="search" hidden>
+      <label class="search-box"><Icon name="search"/><input type="search" name="q" aria-label="搜索全部项目" placeholder="搜索项目标题、正文或标签" /></label>
+    </form>
+    <p class="result-count" aria-live="polite" data-total={total}>共 {total} 个项目</p>
+    <div id="browse">
+      <ul class="entries">{entries.map(entry => <EntryRow entry={entry} />)}</ul>
+      {pages > 1 && <nav class="pagination" aria-label="项目分页">
+        {page > 1 && <a href={archiveUrl(page - 1)}>上一页</a>}
+        <span>第 {page} / {pages} 页</span>
+        {page < pages && <a href={archiveUrl(page + 1)}>下一页</a>}
+      </nav>}
+    </div>
+    <div id="matches" hidden>
+      <ul class="entries"></ul>
+      <nav class="pagination" aria-label="搜索结果分页" hidden>
+        <a data-prev>上一页</a><span></span><a data-next>下一页</a>
+      </nav>
+    </div>
+  </section>
+  <script src="../../scripts/project-search.ts"></script>
+</Shell>

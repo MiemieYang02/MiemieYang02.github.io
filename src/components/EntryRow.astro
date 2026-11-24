@@ -1,0 +1,12 @@
+---
+import { href, isoDate, type Entry } from '../lib/entries';
+interface Props { entry: Entry }
+const { entry } = Astro.props;
+const { title, description, category, tags } = entry.data;
+---
+<li class="entry-row">
+  <div class="entry-meta"><span>{category}</span><i></i><time datetime={isoDate(entry)}>{isoDate(entry).replaceAll('-', '.')}</time></div>
+  <h3><a href={href(entry)}>{title}</a></h3>
+  <p>{description}</p>
+  <div class="tags">{tags.map(tag => <a href={'/projects/?q=' + encodeURIComponent(tag)}>#{tag}</a>)}</div>
+</li>
